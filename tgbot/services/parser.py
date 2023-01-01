@@ -9,3 +9,10 @@ def inspect(msg):
     msg = msg.replace(',','1')
     msg = msg.replace('.', '1')
     return msg.isdigit()
+
+def dot(some_str):
+    if ',' in some_str:
+        new_some_str = some_str.replace(',','.')
+    else:
+        new_some_str = some_str
+    return new_some_str

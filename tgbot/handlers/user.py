@@ -6,7 +6,7 @@ from tgbot.keyboards.keybrd import again, kb_menu
 
 from tgbot.misc.states import Level
 from tgbot.services.db_api.db_command import BotDB
-from tgbot.services.parser import calcuate, inspect
+from tgbot.services.parser import calcuate, inspect, dot
 
 BotDB = BotDB('users_log.db')
 err = 'Попробуйте написать цифрами'
@@ -16,7 +16,7 @@ async def user_start(message: Message):
         BotDB.add_user(message.chat.id, message.chat.first_name, datetime.now())
         await message.bot.send_message('443232407', BotDB.count_users())
     await message.answer(f"Привет {message.chat.first_name}! \n"
-                         f"Я помогаю быстро посчитать среднюю цену Вашей акции после того как ты усреднишься! \n"
+                         f"Я помогаю быстро посчитать среднюю цену Вашей акции после того как Вы усреднитесь! \n"
                          f"\n"
                          f"Напишите, какая сейчас средняя цена акции!")
     await Level.mid_price.set()
@@ -36,8 +36,11 @@ async def user_again(message: Message):
 
 
 async def my_mid_price(message: Message, state: FSMContext):
-    if inspect(message.text):
-        my_mid_price = message.text
+    replaced = dot(message.text)
+    print(replaced)
+    if inspect(replaced):
+        my_mid_price = replaced
+        dot(my_mid_price)
         await state.update_data(my_mid_price=my_mid_price)
         await message.answer(f"Теперь напишите какое количество акций на данный момент у Вас в портфеле", reply_markup=again)
         await Level.quality.set()
@@ -48,8 +51,10 @@ async def my_mid_price(message: Message, state: FSMContext):
 
 
 async def my_quality(message: Message, state: FSMContext):
+    replaced = dot(message.text)
+    print(replaced)
     if inspect(message.text):
-        my_quality = message.text
+        my_quality = replaced
         await state.update_data(my_quality=my_quality)
         await message.answer(f"Теперь напишите какая цена акции на данный момент", reply_markup=again)
         await Level.price_now.set()
@@ -57,8 +62,10 @@ async def my_quality(message: Message, state: FSMContext):
         await message.answer(f"{err}", reply_markup=again)
 
 async def my_price_now(message: Message, state: FSMContext):
-    if inspect(message.text):
-        my_price_now = message.text
+    replaced = dot(message.text)
+    print(replaced)
+    if inspect(replaced):
+        my_price_now = replaced
         await state.update_data(my_price_now=my_price_now)
         await message.answer(f"Теперь напишите сколько хотите преобрести акций для 'усреднения'", reply_markup=again)
         await Level.how_much.set()
@@ -67,8 +74,10 @@ async def my_price_now(message: Message, state: FSMContext):
 
 
 async def finnaly(message: Message, state: FSMContext):
-    if inspect(message.text):
-        how_much = message.text
+    replaced = dot(message.text)
+    print(replaced)
+    if inspect(replaced):
+        how_much = replaced
         data = await state.get_data()
         mid_price = data.get('my_mid_price')
         data = await state.get_data()
@@ -76,8 +85,8 @@ async def finnaly(message: Message, state: FSMContext):
         data = await state.get_data()
         price_now = data.get('my_price_now')
         my_finnaly = calcuate(float(mid_price), float(quality), float(price_now), float(how_much))
-        await message.answer(f"Вы потратили - {my_finnaly[0]} руб. на акции \n"
-                         f"Средняя цена после 'усреднения' - {my_finnaly[1]} руб.", reply_markup=again)
+        await message.answer(f"Вы потратили  {my_finnaly[0]} на акции \n"
+                         f"Средняя цена после 'усреднения'  {my_finnaly[1]}", reply_markup=again)
         await state.reset_state()
     else:
         await message.answer(f"{err}", reply_markup=again)
